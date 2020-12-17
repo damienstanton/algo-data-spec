@@ -21,6 +21,14 @@ type runestack struct {
 	elements []el
 }
 
+func newStackFrom(s string) runestack {
+	elements := make([]el, 0)
+	for i, r := range []rune(s) {
+		elements = append(elements, el{r, i})
+	}
+	return runestack{elements}
+}
+
 func (s *runestack) push(e el) {
 	s.elements = append(s.elements, e)
 }
@@ -39,30 +47,13 @@ func (s *runestack) isEmpty() bool {
 	return false
 }
 
-func isOpen(r rune) bool {
-	switch r {
-	case '{':
-		return true
-	case '[':
-		return true
-	case '(':
-		return true
-	default:
-		return false
+func (s *runestack) contains(r rune) bool {
+	for _, e := range s.elements {
+		if e.char == r {
+			return true
+		}
 	}
-}
-
-func isClose(r rune) bool {
-	switch r {
-	case '}':
-		return true
-	case ']':
-		return true
-	case ')':
-		return true
-	default:
-		return false
-	}
+	return false
 }
 
 func pair(r rune) rune {
@@ -80,12 +71,14 @@ func pair(r rune) rune {
 
 func solve(str string) string {
 	stack := runestack{}
+	openStack := newStackFrom("{[(")
+	closeStack := newStackFrom("}])")
 
 	for i, c := range []rune(str) {
 		comp := newElement(c, i)
-		if isOpen(c) {
+		if openStack.contains(c) {
 			stack.push(newElement(c, i))
-		} else if isClose(c) {
+		} else if closeStack.contains(c) {
 			if stack.isEmpty() {
 				return fmt.Sprintf("%d", comp.pos+1)
 			}
